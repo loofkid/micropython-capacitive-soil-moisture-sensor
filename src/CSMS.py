@@ -38,11 +38,12 @@
 
 from machine import ADC, Pin
 import time
+from os import uname
 
 
 class CSMS:
 
-    def __init__(self, adc, min_value=None, max_value=None):
+    def __init__(self, adc: ADC, min_value:int=None, max_value:int=None):
         self.calibrated_min = min_value
         self.calibrated_max = max_value
         self.adc = adc
@@ -82,18 +83,24 @@ class CSMS:
 
     # Reads from the ADC for x number of times and then returns the average from all the readings
     # By default read the ADC 25 times with a 100ms pause between readings, this returns a more accurate reading.
-    def read_raw(self, iterations):
+    def read_raw(self, iterations: int):
         readings = []
 
         while len(readings) < iterations:
-            reading = self.adc.read()
+            if uname().sysname == 'esp32':
+                reading = self.adc.read_uv()
+            elif hasattr(self.adc, 'read_u16') and callable(self.adc.read_u16):
+                reading = self.adc.read_u16()
+            else:
+                reading = self.adc.read()
+            
             readings.append(reading)
             time.sleep_ms(100)
 
         return sum(readings) / len(readings)
 
     # Convert the averaged or single reading to percentage between calibrated min and max values
-    def convert_to_percentage(self, reading):
+    def convert_to_percentage(self, reading: int):
         percent = ((reading - self.calibrated_min) /
                    (self.calibrated_max - self.calibrated_min)) * 100
 
