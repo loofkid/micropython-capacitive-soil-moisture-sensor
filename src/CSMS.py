@@ -43,7 +43,7 @@ from os import uname
 
 class CSMS:
 
-    def __init__(self, adc: ADC, min_value:int=None, max_value:int=None):
+    def __init__(self, adc: ADC, min_value:int|float=None, max_value:int|float=None):
         self.calibrated_min = min_value
         self.calibrated_max = max_value
         self.adc = adc
@@ -78,8 +78,8 @@ class CSMS:
         time.sleep(2)
         print('Calibration complete! Modify your programs variables with the following results:')
 
-        print('min_value = ', round(min_value))
-        print('max_value = ', round(max_value))
+        print('min_value = ', round(min_value, 1))
+        print('max_value = ', round(max_value, 1))
 
     # Reads from the ADC for x number of times and then returns the average from all the readings
     # By default read the ADC 25 times with a 100ms pause between readings, this returns a more accurate reading.
@@ -100,7 +100,7 @@ class CSMS:
         return sum(readings) / len(readings)
 
     # Convert the averaged or single reading to percentage between calibrated min and max values
-    def convert_to_percentage(self, reading: int):
+    def convert_to_percentage(self, reading: int | float):
         percent = ((reading - self.calibrated_min) /
                    (self.calibrated_max - self.calibrated_min)) * 100
 
